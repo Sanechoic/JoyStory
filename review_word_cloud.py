@@ -16,6 +16,9 @@ from PIL import Image
 import numpy as np
 from os import path
 import os
+import ssl
+
+
 
 unresolved = ["No ratings or reviews found", "Multiple candidates discovered", "no location found"]
 
@@ -24,6 +27,7 @@ rail_words = ['train','trains','railway','station','platform','platforms','londo
 common_words = ['thank','well','know','though','around','get','one','place','need','take','really','look','even','lot','always','going','use','much','got','getting','two','many','least','quite','especially','see','still','never','although','say','want','needs','back','way','next','side', 'good','great','nice','day']
 
 def wc(data,bgcolor,title, mask_path):
+    print(f'generating word cloud')
     plt.figure(figsize = (12,12))
 
     d = path.dirname(__file__) if "__file__" in locals() else os.getcwd()
@@ -40,11 +44,11 @@ def wc(data,bgcolor,title, mask_path):
     # create coloring from image
     wc.to_file(path.join(d, 'word_cloud.png'))
 
-    '''
+
     plt.imshow(wc)
     plt.axis('off')
     plt.show()
-    '''
+
 
 def word_bag(review_text, stop_words, punc_re):
     r = review_text.lower()
@@ -68,6 +72,17 @@ def word_dist(wb):
     #plt.show()
 
 def main(review_file):
+    try:
+        _create_unverified_https_context = ssl._create_unverified_context
+    except AttributeError:
+        pass
+    else:
+        ssl._create_default_https_context = _create_unverified_https_context
+
+    nltk.download('stopwords')
+    nltk.download('punkt')
+    #print(stopwords.words('english'))
+
     stop_words = list(get_stop_words('en'))
     nltk_words = list(stopwords.words('english'))
     stop_words.extend(nltk_words)
@@ -92,6 +107,7 @@ def main(review_file):
     r_count = 0
     u = 0
     nnr = 0
+    print(f'processing reviews')
     for i, station in enumerate(station_reviews.keys()):
         if station_reviews[station] in unresolved:
             u += 1
@@ -103,7 +119,7 @@ def main(review_file):
         '''
         for review in station_reviews[station]['reviews']:
             r_count+=1
-            print(r_count)
+            #print(f'processing review: {r_count}')
             if not review['text']:
                 continue
 
@@ -115,10 +131,7 @@ def main(review_file):
     #print(wb)
 
     #word_dist(wb)
-    wc(wb, 'white', 'Rail Review', 'mask_colour.png')
-
-
-
+    wc(wb, 'white', 'Rail Review', 'mask_colour_small.png')
 
 
 if __name__ == '__main__':
