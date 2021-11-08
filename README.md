@@ -1,4 +1,4 @@
-# JoyStory - Data Analysis
+# JoyStory
 
 [About the project](https://design.williampepera.com/joystory/index.html)
 
